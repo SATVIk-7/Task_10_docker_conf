@@ -1,0 +1,52 @@
+- hosts: all
+  tasks:
+  - file:
+      path: /etc/webserver
+      state: directory
+  - copy:
+      src: /etc/yum.repos.d/docker.repo
+      dest: /etc/yum.repos.d/
+  - copy:
+      src: /root/task_10_conf_dock/conf_dock.yml
+      dest: /etc/webserver/
+  - package:
+      name: httpd
+      state: present
+  - copy:
+      src: /root/task10.html
+      dest: /var/www/html/
+
+    name: "docker install" 
+  - command: yum install docker-ce --nobest -y 
+  - command: iptables -t filter -F
+  - command:  iptables -t filter -X
+
+    name: "docker service started"
+  - service:
+      name: docker
+      state: restarted
+ 
+    name: "firewall stopped"
+  - service:
+      name: firewalld
+      state: stopped
+      enabled: yes
+
+    name: "httpd service started"
+  - service:
+      name: httpd
+      state: started
+  - command: pip3 install docker
+  - docker_image:
+      name: httpd:latest
+      source: pull
+  - docker_container:
+      name: myhttpd
+      image: httpd:latest
+      exposed_ports:
+       - "80"
+      published_ports:
+       - 8081:80
+      volumes:
+       - /etc/webserver:/usr/local/apache2/htdocs 
+    
